@@ -1,0 +1,26 @@
+# Node
+node_modules/
+dist/
+.env
+*.log
+
+# Go
+cli/bin/
+*.exe
+
+# Docker
+.docker/
+
+# OS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+
+# My Work
+CODING_RULES.md
+WORKFLOW.md
+
+# Assignment
+*.pdf
