@@ -5,12 +5,8 @@ import {
   DEFAULT_SORT_FIELD,
   DEFAULT_SORT_ORDER,
 } from "../utils/blueprint.constants";
-import {
-  PaginatedResult,
-  ListBlueprintsOptions,
-  CreateBlueprintDto,
-  UpdateBlueprintDto,
-} from "../models/blueprint.types";
+import { PaginatedResult, ListBlueprintsOptions } from "../models/blueprint.types";
+import { CreateBlueprintDto, UpdateBlueprintDto } from "../models/blueprint.schema";
 
 const blueprintRepository = () =>
   AppDataSource.getRepository(BlueprintEntity);

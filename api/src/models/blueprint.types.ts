@@ -14,17 +14,3 @@ export interface ListBlueprintsOptions {
   sortBy?: string;
   sortOrder?: "ASC" | "DESC";
 }
-
-export interface CreateBlueprintDto {
-  name: string;
-  version: string;
-  author: string;
-  blueprint_data: object;
-}
-
-export interface UpdateBlueprintDto {
-  name?: string;
-  version?: string;
-  author?: string;
-  blueprint_data?: object;
-}
