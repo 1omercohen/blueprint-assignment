@@ -2,6 +2,8 @@
 import { BlueprintEntity } from "../models/blueprint.entity";
 import { PaginatedResult, ListBlueprintsOptions } from "../models/blueprint.types";
 import { CreateBlueprintDto, UpdateBlueprintDto } from "../models/blueprint.schema";
+import { NotFoundError } from "../utils/errors";
+import { BLUEPRINT_RESOURCE } from "../utils/blueprint.constants";
 import {
   createBlueprint,
   findBlueprintById,
@@ -10,7 +12,6 @@ import {
   deleteBlueprint,
 } from "../repositories/blueprint.repository";
 
-const BLUEPRINT_NOT_FOUND = (id: number): string => `Blueprint with id ${id} not found`;
 
 export const createBlueprintService = async (
   dto: CreateBlueprintDto
@@ -22,7 +23,7 @@ export const getBlueprintService = async (
   const blueprint = await findBlueprintById(id);
 
   if (!blueprint) {
-    throw new Error(BLUEPRINT_NOT_FOUND(id));
+    throw new NotFoundError(BLUEPRINT_RESOURCE, id);
   }
 
   return blueprint;
@@ -39,7 +40,7 @@ export const updateBlueprintService = async (
   const updated = await updateBlueprint(id, dto);
 
   if (!updated) {
-    throw new Error(BLUEPRINT_NOT_FOUND(id));
+    throw new NotFoundError(BLUEPRINT_RESOURCE, id);
   }
 
   return updated;
@@ -49,6 +50,6 @@ export const deleteBlueprintService = async (id: number): Promise<void> => {
   const deleted = await deleteBlueprint(id);
 
   if (!deleted) {
-    throw new Error(BLUEPRINT_NOT_FOUND(id));
+    throw new NotFoundError(BLUEPRINT_RESOURCE, id);
   }
 };
