@@ -26,5 +26,6 @@ export const errorMiddleware = (
 
   res.status(statusCode).json({
     error: error.message,
+    correlationId: res.locals.correlationId,
   });
 };

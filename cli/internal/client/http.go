@@ -9,7 +9,6 @@ import (
 )
 
 const (
-	httpTimeout     = 10 * time.Second
 	blueprintsPath  = "/blueprints"
 	contentTypeJSON = "application/json"
 )
@@ -29,12 +28,12 @@ type Client struct {
 	httpClient *http.Client
 }
 
-// New creates a new Client with the given base URL.
-func New(baseURL string) *Client {
+// New creates a new Client with the given base URL and request timeout.
+func New(baseURL string, timeout time.Duration) *Client {
 	return &Client{
 		baseURL: baseURL,
 		httpClient: &http.Client{
-			Timeout: httpTimeout,
+			Timeout: timeout,
 		},
 	}
 }

@@ -3,13 +3,20 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/spf13/cobra"
 )
 
-const defaultAPIBaseURL = "http://localhost:3000"
+const (
+	defaultAPIBaseURL = "http://localhost:3000"
+	defaultTimeout    = 30 * time.Second
+)
 
-var apiBaseURL string
+var (
+	apiBaseURL string
+	apiTimeout time.Duration
+)
 
 var rootCmd = &cobra.Command{
 	Use:   "blueprint",
@@ -30,5 +37,11 @@ func init() {
 		"api-url",
 		defaultAPIBaseURL,
 		"Base URL of the Blueprint Manager API",
+	)
+	rootCmd.PersistentFlags().DurationVar(
+		&apiTimeout,
+		"timeout",
+		defaultTimeout,
+		"HTTP request timeout (e.g. 10s, 1m)",
 	)
 }

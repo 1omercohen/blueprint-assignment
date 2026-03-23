@@ -7,7 +7,9 @@ import swaggerUi from "swagger-ui-express";
 
 // internal
 import blueprintRoutes from "./routes/blueprint.routes";
+import healthRouter from "./routes/health.routes";
 import { errorMiddleware } from "./middleware/error.middleware";
+import { httpLoggerMiddleware } from "./middleware/http-logger.middleware";
 import { rateLimitMiddleware } from "./middleware/rate-limit.middleware";
 import { correlationIdMiddleware } from "./middleware/correlation-id.middleware";
 import { swaggerDocument } from "./docs/swagger";
@@ -19,9 +21,11 @@ const createApp = (): Application => {
   const app = express();
 
   app.use(correlationIdMiddleware);
+  app.use(httpLoggerMiddleware);
   app.use(rateLimitMiddleware);
   app.use(express.json());
   app.use(SWAGGER_PREFIX, swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+  app.use(healthRouter);
   app.use(API_PREFIX, blueprintRoutes);
   app.use(errorMiddleware);
 

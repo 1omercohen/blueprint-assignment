@@ -10,7 +10,7 @@ import (
 
 // newClient constructs a BlueprintClient using the global --api-url flag.
 func newClient() client.BlueprintClient {
-	return client.New(apiBaseURL)
+	return client.New(apiBaseURL, apiTimeout)
 }
 
 // parseJSONPayload reads a JSON file from path and returns it as map[string]any.

@@ -9,7 +9,9 @@ export const correlationIdMiddleware = (
   res: Response,
   next: NextFunction
 ): void => {
-  const correlationId = req.headers[CORRELATION_ID_HEADER] ?? randomUUID();
+  const correlationId =
+    (req.headers[CORRELATION_ID_HEADER] as string) ?? randomUUID();
+  res.locals.correlationId = correlationId;
   res.setHeader(CORRELATION_ID_HEADER, correlationId);
   next();
 };
