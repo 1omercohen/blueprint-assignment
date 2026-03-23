@@ -8,10 +8,8 @@ const config: Config = {
   setupFiles: ["<rootDir>/tests/helpers/env.ts"],
   testTimeout: 30000,
   verbose: true,
-  globals: {
-    "ts-jest": {
-      tsconfig: "<rootDir>/tsconfig.test.json",
-    },
+  transform: {
+    "^.+\\.tsx?$": ["ts-jest", { tsconfig: "<rootDir>/tsconfig.test.json" }],
   },
 };
 
