@@ -97,3 +97,77 @@ migration correctness and query builder edge cases.
 | Log shipping | stdout | Aggregated (Datadog, CloudWatch) with correlation ID indexed |
 | Payload size | Unbounded `blueprint_data` | Request size limit middleware |
 | Test teardown | `--forceExit` masks open handle | Explicit `AppDataSource.destroy` in `afterAll` |
+
+---
+
+## If This Were a Production System
+
+### Duplicate Prevention
+
+Two concurrent `POST /blueprints` with the same `name + version` currently both succeed. The fix
+is a unique constraint at the DB level — application-level checks have race conditions under
+concurrency, only the DB serialises correctly:
+
+```sql
+ALTER TABLE blueprints ADD CONSTRAINT uq_name_version UNIQUE (name, version);
+```
+
+Catch the `23505` PostgreSQL unique violation and map it to `409 Conflict`. For clients that retry,
+an `Idempotency-Key` header stored in Redis prevents double-processing.
+
+### Caching
+
+Every `GET /blueprints/:id` hits the DB today. At scale, add Redis with a cache-aside pattern:
+
+```text
+GET /blueprints/:id
+  → check Redis
+    → HIT:  return cached value
+    → MISS: query DB → write to Redis (TTL 60s) → return
+```
+
+On `PUT` or `DELETE`, explicitly evict the key. For list endpoints, use short TTLs and accept
+eventual consistency rather than attempting full cache invalidation.
+
+HTTP `ETag` + `Cache-Control` headers would give CDN and client-side caching for free on top of this.
+
+### Async Processing via Queue
+
+If `blueprint_data` needs post-creation processing (schema validation, infrastructure provisioning,
+propagation to other services), synchronous handling blocks the HTTP request and loses work on
+failure. The pattern:
+
+```text
+POST /blueprints
+  → write to DB (status: "pending")
+  → publish event to queue (SQS / RabbitMQ / Kafka)
+  → return 202 Accepted
+
+Worker
+  → consume event
+  → process blueprint_data
+  → update status: "ready" | "failed"
+```
+
+The `status` field is then exposed on `GET /blueprints/:id` so callers can poll or subscribe.
+
+### Multi-Instance Concerns
+
+| Problem | Solution |
+| ------- | -------- |
+| Rate limiting state shared across pods | Move to Redis store (`rate-limit-redis`) |
+| DB connection pool exhaustion | Cap `max` connections per instance, add PgBouncer |
+| Concurrent update conflicts | Optimistic locking — `version` column, `WHERE id = ? AND version = ?` |
+| Read scaling | PostgreSQL read replica for `GET` queries |
+
+### Resulting Stack
+
+```text
+Client
+  → Load Balancer
+    → API instances (N)
+      → Redis       (cache + rate limit state + idempotency keys)
+      → PostgreSQL  (primary writes + read replica)
+      → Queue       (SQS / RabbitMQ)
+        → Worker instances
+```
