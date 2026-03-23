@@ -18,5 +18,5 @@ export const AppDataSource = new DataSource({
   synchronize: false,
   logging: false,
   entities: [BlueprintEntity],
-  migrations: ["src/db/migrations/*.ts"],
+  migrations: [__dirname + "/migrations/*.{ts,js}"],
 });
